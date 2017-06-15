@@ -1,39 +1,15 @@
 package models;
 
 import java.sql.*;
-import java.util.Properties;
 
 /**
  * Abstract Class for back-end code.
  * Contains universal functions to be implemented in real Models.
  */
 public abstract class AModel implements IModel {
-    private Connection connection;
+    Connection connection;
 
-    public void startConnection(String username, String password, String server, int port, boolean useSSL) {
-        Properties connectionProps = new Properties();
-        connectionProps.put("user", username);
-        connectionProps.put("password", password);
-
-        try {
-            connection = DriverManager.getConnection("jdbc:mysql://"
-                            + server
-                            + ":"
-                            + port
-                            + "/"
-                            + "time-to-climb"
-                            + "?characterEncoding=UTF-8&useSSL="
-                            + useSSL,
-                    connectionProps);
-        }
-        catch (java.sql.SQLException e) {
-            System.out.println(e);
-            System.out.println("Exiting.");
-            System.exit(1);
-        }
-    }
-
-    public ResultSet requestData(String query) {
+    public ResultSet requestData(String query) throws SQLException {
         ResultSet result;
         try {
             Statement statement = this.connection.createStatement();

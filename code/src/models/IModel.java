@@ -1,7 +1,10 @@
 package models;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.util.List;
+
+import utils.ChampStat;
 
 /**
  * Interface for implementations of TimeToClimb's back-end code.
@@ -16,17 +19,21 @@ public interface IModel {
      * @param port The port of the SQL server which traffic is routed through
      * @param useSSL Select whether to use SSL encryption
      */
-    void startConnection(String username, String password, String server, int port, boolean useSSL);
+    void startConnection(String username, String password, String server, int port, boolean useSSL) throws SQLException;
+
+    /**
+     * Stops and shuts down the current connection to the SQL server.
+     */
+    void stopConnection() throws SQLException;
 
     /**
      * Requests data from the SQL database with the given query, using the model's connection.
      * @param query The SQL query to send to the database.
      */
-    ResultSet requestData(String query);
+    ResultSet requestData(String query) throws SQLException;
 
     /**
      * Returns the top three champions for each role for the user.
-     * @param results The top three champions for each role: Top, Jungle, Mid, ADC, and Support (in that order)
      */
-    ArrayList<ArrayList<String>> getTopThree(ResultSet results);
+    List<List<ChampStat>> getTopThree() throws SQLException;
 }

@@ -1,14 +1,36 @@
 package models;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  * Model where the MySQL Server is hosted locally.
  */
-public class MySQLModel extends AModel {
-    @Override
-    public ArrayList<ArrayList<String>> getTopThree(ResultSet results) {
-        return null;
+public class MySQLModel extends ASQLModel {
+
+    /**
+     * Constructor for a MySQL Model.
+     */
+    public MySQLModel() {
+
+    }
+
+    @Override // Since this is a MySQL specific connection (in the URL)
+    public void startConnection(String username, String password, String server, int port, boolean useSSL)
+            throws SQLException {
+        Properties connectionProps = new Properties();
+        connectionProps.put("user", username);
+        connectionProps.put("password", password);
+
+        connection = DriverManager.getConnection("jdbc:mysql://"
+                        + server
+                        + ":"
+                        + port
+                        + "/"
+                        + "time-to-climb"
+                        + "?characterEncoding=UTF-8&useSSL="
+                        + useSSL,
+                connectionProps);
     }
 }
