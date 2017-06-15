@@ -30,7 +30,15 @@ public interface IModel {
      * Requests data from the SQL database with the given query, using the model's connection.
      * @param query The SQL query to send to the database.
      */
-    ResultSet requestData(String query) throws SQLException;
+    ResultSet requestData(String query);
+
+    /**
+     * Sends DDL query to the SQL database to create or edit database.
+     *
+     * @param query The SQL query to send to the database.
+     * @throws SQLException
+     */
+    void sendQuery(String query) throws SQLException;
 
     /**
      * Returns the top three champions for each role for the user.

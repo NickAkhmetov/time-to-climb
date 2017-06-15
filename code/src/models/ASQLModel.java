@@ -17,7 +17,7 @@ public abstract class ASQLModel implements IModel {
 
     Connection connection;
 
-    public ResultSet requestData(String query) throws SQLException {
+    public ResultSet requestData(String query) {
         ResultSet result;
         try {
             Statement statement = this.connection.createStatement();
@@ -25,12 +25,23 @@ public abstract class ASQLModel implements IModel {
             return result;
         } catch (java.sql.SQLException e) {
             System.out.println("Unable to retrieve results while querying server.");
-            System.out.println(e);
-            System.exit(1);
+            System.out.println("Retrying...");
+            requestData(query);
         }
-        // Not reachable - will return in the try or exit. This line is only here for compile time error avoidance.
-        // Returning result gives "may be uninitialized" error on compile.
+        // Won't be reached during proper operation.
         return null;
+    }
+
+    @Override
+    public void sendQuery(String query) {
+        try {
+            Statement statement = this.connection.createStatement();
+            statement.executeQuery(query);
+        } catch (java.sql.SQLException e) {
+            System.out.println("Unable to reach server.");
+            System.out.println("Retrying...");
+            sendQuery(query);
+        }
     }
 
     @Override
@@ -81,5 +92,4 @@ public abstract class ASQLModel implements IModel {
 
         return champs;
     }
-
 }

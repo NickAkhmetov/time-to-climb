@@ -28,7 +28,7 @@ public class MySQLModel extends ASQLModel {
                         + ":"
                         + port
                         + "/"
-                        + "time-to-climb"
+                        + "lol"
                         + "?characterEncoding=UTF-8&useSSL="
                         + useSSL,
                 connectionProps);
