@@ -5,7 +5,7 @@ import controllers.IController;
 /**
  * CommandLine View for the project.
  */
-public class ConsoleView implements AView{
+public class ConsoleView extends AView{
     @Override
     public void display(IController controller) {
 
