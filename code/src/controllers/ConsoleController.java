@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
- * Text-based Controller for the project.
+ * Text-based Controller for the project..
  */
 public class ConsoleController extends AController {
     private MySQLModel model;
