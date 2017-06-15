@@ -41,7 +41,7 @@ public abstract class ASQLModel extends AModel {
         // Instantiate list of ChampStats
         List<List<ChampStat>> champs = new ArrayList<List<ChampStat>>();
         for (int i = 0; i < 5; i++) {
-            champs.add(new ArrayList( < List < ChampStat >>));
+            champs.add(new ArrayList<ChampStat>());
         }
         // index 0 is top, 1 is jungle, 2 is mid, 3 is adc, 4 is support
 
