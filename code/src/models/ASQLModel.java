@@ -24,14 +24,15 @@ public abstract class ASQLModel implements IModel {
             result = statement.executeQuery(query);
             return result;
         } catch (java.sql.SQLException e) {
+            System.out.println(e);
             System.out.println("Unable to retrieve results while querying server.");
             System.out.println("Retrying...");
-            requestData(query);
             try {
                 Thread.sleep(1000);
             } catch (java.lang.InterruptedException i) {
                 System.out.println("wake me up inside");
             }
+            requestData(query);
         }
         // Won't be reached during proper operation.
         return null;

@@ -8,8 +8,8 @@ import models.MySQLModel;
  * CommandLine View for the project.
  */
 public class ConsoleView extends AView{
-    MySQLModel model;
-    Appendable ap;
+    private MySQLModel model;
+    private Appendable ap;
 
     public ConsoleView(MySQLModel model, Appendable ap) {
         this.model = model;
@@ -18,6 +18,7 @@ public class ConsoleView extends AView{
 
     @Override
     public void display(IController controller) {
+
 
     }
 }
