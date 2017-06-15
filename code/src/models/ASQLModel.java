@@ -2,8 +2,10 @@ package models;
 
 import utils.ChampStat;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +13,25 @@ import java.util.List;
 /**
  * Abstract class for a SQL-based implementation of the back-end code.
  */
-public abstract class ASQLModel extends AModel {
+public abstract class ASQLModel implements IModel {
+
+    Connection connection;
+
+    public ResultSet requestData(String query) throws SQLException {
+        ResultSet result;
+        try {
+            Statement statement = this.connection.createStatement();
+            result = statement.executeQuery(query);
+            return result;
+        } catch (java.sql.SQLException e) {
+            System.out.println("Unable to retrieve results while querying server.");
+            System.out.println(e);
+            System.exit(1);
+        }
+        // Not reachable - will return in the try or exit. This line is only here for compile time error avoidance.
+        // Returning result gives "may be uninitialized" error on compile.
+        return null;
+    }
 
     @Override
     public void stopConnection() throws SQLException {
