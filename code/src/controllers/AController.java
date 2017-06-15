@@ -6,4 +6,5 @@ package controllers;
  * Contains universal functions to be implemented in real Controllers.
  */
 public abstract class AController implements IController {
+
 }
