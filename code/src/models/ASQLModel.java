@@ -1,5 +1,6 @@
 package models;
 
+import com.sun.istack.internal.Nullable;
 import utils.ChampStat;
 
 import java.sql.Connection;
@@ -15,8 +16,10 @@ import java.util.List;
  */
 public abstract class ASQLModel implements IModel {
 
-    Connection connection;
+    protected Connection connection;
 
+    @Override
+    @Nullable
     public ResultSet requestData(String query) {
         ResultSet result;
         try {
@@ -26,13 +29,6 @@ public abstract class ASQLModel implements IModel {
         } catch (java.sql.SQLException e) {
             System.out.println(e);
             System.out.println("Unable to retrieve results while querying server.");
-            System.out.println("Retrying...");
-            try {
-                Thread.sleep(1000);
-            } catch (java.lang.InterruptedException i) {
-                System.out.println("wake me up inside");
-            }
-            requestData(query);
         }
         // Won't be reached during proper operation.
         return null;
@@ -67,16 +63,15 @@ public abstract class ASQLModel implements IModel {
         // Call the procedures and add the results to a list
         // FORMATTING FOR RESULTS LIST MUST BE
         // STRING name, DOUBLE kda, DOUBLE winrate, INT gamesPlayed, DOUBLE performance, DOUBLE stdDev
-        List<ResultSet> results = new ArrayList<ResultSet>();
-        results.addAll(Arrays.asList(
-                this.requestData(proc_top),
-                this.requestData(proc_jng),
-                this.requestData(proc_mid),
-                this.requestData(proc_adc),
-                this.requestData(proc_sup)));
-
+        List<ResultSet> results = new ArrayList<ResultSet>(5) {{
+            add(requestData(proc_top));
+            add(requestData(proc_jng));
+            add(requestData(proc_mid));
+            add(requestData(proc_adc));
+            add(requestData(proc_sup));
+        }};
         // Instantiate list of ChampStats
-        List<List<ChampStat>> champs = new ArrayList<List<ChampStat>>();
+        List<List<ChampStat>> champs = new ArrayList<List<ChampStat>>(5);
         for (int i = 0; i < 5; i++) {
             champs.add(new ArrayList<ChampStat>());
         }

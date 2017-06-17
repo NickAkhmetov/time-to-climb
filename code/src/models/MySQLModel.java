@@ -10,13 +10,13 @@ import java.util.Properties;
 public class MySQLModel extends ASQLModel {
 
     /**
-     * Constructor for a MySQL Model.
+     * Constructor for a MySQL Model. Does nothing for now, might do something later
      */
     public MySQLModel() {
 
     }
 
-    @Override // Since this is a MySQL specific connection (in the URL)
+    @Override
     public void startConnection(String username, String password, String server, int port, boolean useSSL)
             throws SQLException {
         Properties connectionProps = new Properties();

@@ -6,6 +6,7 @@ import java.util.Objects;
  * Class for storing Champion statistics for easy parsing and displaying of personal performance.
  */
 public class ChampStat {
+    // These stats are all pulled from the server.
     private String name;
     private double kda;
     private double winrate;
@@ -13,6 +14,17 @@ public class ChampStat {
     private double performance;
     private double stdDev;
 
+    /**
+     * Object containing a player's stats for one champion.
+     *
+     * @param name        name of the champion
+     * @param kda         Kill/Death/Assist ratio of the player when using the champion
+     * @param winrate     Winrate of the player when using the champion
+     * @param gamesPlayed Games played using the champion
+     * @param performance Performance as measured by the product of KDA x Winrate (balances out getting carried
+     *                    by other players while having poor personal performance)
+     * @param stdDev      Standard deviation of the player's performance.
+     */
     public ChampStat(String name, double kda, double winrate, int gamesPlayed, double performance, double stdDev) {
         this.name = name;
         this.kda = kda;
@@ -74,7 +86,7 @@ public class ChampStat {
         return (obj instanceof ChampStat) && ((ChampStat) obj).getName().equals(this.getName());
     }
 
-    @Override
+    @Override // For easy ConsoleView use
     public String toString() {
         String sep = " | ";
         return sep
