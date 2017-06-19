@@ -18,7 +18,7 @@ USE lol;
 DROP TABLE IF EXISTS summoners;
 CREATE TABLE summoners
 (
-	summoner_id    BIGINT PRIMARY KEY,
+	summoner_id    BIGINT		PRIMARY KEY,
 	account_id     BIGINT       NOT NULL,
 	summoner_name  VARCHAR(100) NOT NULL,
 	summoner_level INT          NOT NULL
@@ -27,8 +27,8 @@ CREATE TABLE summoners
 DROP TABLE IF EXISTS leagues;
 CREATE TABLE leagues
 (
-	league_season INT PRIMARY KEY,
-	league_rank   VARCHAR(100) NOT NULL,
+	league_season INT 			PRIMARY KEY,
+	league_rank   VARCHAR(100) 	NOT NULL,
 	summoner_id   BIGINT,
 	CONSTRAINT summoners_fk_leagues
 	FOREIGN KEY (summoner_id)
@@ -40,23 +40,23 @@ CREATE TABLE leagues
 DROP TABLE IF EXISTS champions;
 CREATE TABLE champions
 (
-	champion_id   INT PRIMARY KEY,
-	champion_name VARCHAR(100) NOT NULL,
-	champion_type VARCHAR(100) NOT NULL
+	champion_id   INT 			PRIMARY KEY,
+	champion_name VARCHAR(100) 	NOT NULL,
+	champion_type VARCHAR(100) 	NOT NULL
 );
 
 DROP TABLE IF EXISTS matches;
 CREATE TABLE matches
 (
-	match_id      BIGINT PRIMARY KEY,
-	match_season  INT          NOT NULL,
-	match_role    VARCHAR(100) NOT NULL,
-	match_lane    VARCHAR(100) NOT NULL,
-	match_win     BOOLEAN      NOT NULL,
-	match_kills   INT          NOT NULL,
-	match_deaths  INT          NOT NULL,
-	match_assists INT          NOT NULL,
-	match_cs      INT          NOT NULL,
+	match_id      BIGINT 		PRIMARY KEY,
+	match_season  INT          	NOT NULL,
+	match_role    VARCHAR(100) 	NOT NULL,
+	match_lane    VARCHAR(100) 	NOT NULL,
+	match_win     BOOLEAN      	NOT NULL,
+	match_kills   INT          	NOT NULL,
+	match_deaths  INT          	NOT NULL,
+	match_assists INT          	NOT NULL,
+	match_cs      INT          	NOT NULL,
 	champion_id   INT,
 	summoner_id   BIGINT,
 	CONSTRAINT champions_fk_matches
@@ -80,6 +80,15 @@ INSERT INTO leagues VALUES
 	(3, "Gold 1", 1),
 	(4, "Platinum 5", 1),
 	(5, "Masters", 1);
+
+INSERT INTO champions VALUES
+	(1, "Wukong", "tank"),
+	(2, "Malphite", "tank");
+
+INSERT INTO matches VALUES
+	(1, 5, "tank", "top", true, 10, 2, 5, 135, 1, 1),
+	(2, 5, "tank", "top", true, 10, 2, 5, 135, 2, 1),
+	(3, 5, "tank", "top", false, 20, 3, 10, 135, 2, 1);
 
 -- Procedures --
 -- retrieve_summoner -- 
@@ -110,7 +119,7 @@ DROP PROCEDURE IF EXISTS retrieve_leagues;
 DELIMITER $$
 CREATE PROCEDURE
 	retrieve_leagues(
-	IN sum_id VARCHAR(100)
+	IN sum_id BIGINT
 )
 	BEGIN
 		SELECT
@@ -130,26 +139,27 @@ CALL retrieve_leagues(1);
 DROP PROCEDURE IF EXISTS top_three_top;
 DELIMITER $$
 CREATE PROCEDURE
-	top_three_top(IN sum_id VARCHAR(100))
+	top_three_top(IN sum_id BIGINT)
 	BEGIN
 		SELECT
 			champions.champion_name,
-			SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists) / SUM(ALL matches.match_deaths) AS kda,
-			SUM(*)                                                                                        AS winrate,
-			-- get sum of games won here / games_played
-			SUM(*)                                                                                        AS games_played,
-			kda * winrate                                                                                 AS performance,
-			STDDEV(kda *
-						 winrate)                                                                               AS standard_deviation
+			(SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths) AS kda,
+			count(matches.match_win)                                                                        AS games_played,
+			count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS winrate,
+			((SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths))/
+            count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS performance,
+            -- STDDEV still needs fixing
+			STDDEV(0)                                                                AS standard_deviation
 		FROM matches
 			INNER JOIN champions ON matches.champion_id = champions.champion_id
 		WHERE match_lane = 'TOP'
-		GROUP BY champion_name
+		GROUP BY champion_name -- Where do we select top 3? Right now, it's just ordered alphabetically
+        ORDER BY performance DESC
 		LIMIT 3;
 	END$$
 DELIMITER ;
 
-CALL top_three_top();
+CALL top_three_top(1);
 
 -- top_three_jng --
 -- Gets the top 3 champions the summoner played in the jungle
@@ -157,18 +167,18 @@ DROP PROCEDURE IF EXISTS top_three_jng;
 DELIMITER $$
 CREATE PROCEDURE
 	top_three_jng(
-	IN sum_id VARCHAR(100)
+	IN sum_id BIGINT
 )
 	BEGIN
 		SELECT
 			champions.champion_name,
-			SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists) / SUM(ALL matches.match_deaths) AS kda,
-			SUM(*)                                                                                        AS winrate,
-			-- get sum of games won here / games_played
-			SUM(*)                                                                                        AS games_played,
-			kda * winrate                                                                                 AS performance,
-			STDDEV(kda *
-						 winrate)                                                                               AS standard_deviation
+			(SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths) AS kda,
+			count(matches.match_win)                                                                        AS games_played,
+			count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS winrate,
+			((SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths))/
+            count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS performance,
+            -- STDDEV still needs fixing
+			STDDEV(0)                                                                AS standard_deviation
 		FROM matches
 			INNER JOIN champions ON matches.champion_id = champions.champion_id
 		WHERE match_lane = 'JUNGLE'
@@ -185,18 +195,18 @@ DROP PROCEDURE IF EXISTS top_three_mid;
 DELIMITER $$
 CREATE PROCEDURE
 	top_three_mid(
-	IN sum_id VARCHAR(100)
+	IN sum_id BIGINT
 )
 	BEGIN
 		SELECT
 			champions.champion_name,
-			SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists) / SUM(ALL matches.match_deaths) AS kda,
-			SUM(*)                                                                                        AS winrate,
-			-- get sum of games won here / games_played
-			SUM(*)                                                                                        AS games_played,
-			kda * winrate                                                                                 AS performance,
-			STDDEV(kda *
-						 winrate)                                                                               AS standard_deviation
+			(SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths) AS kda,
+			count(matches.match_win)                                                                        AS games_played,
+			count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS winrate,
+			((SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths))/
+            count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS performance,
+            -- STDDEV still needs fixing
+			STDDEV(0)                                                                AS standard_deviation
 		FROM matches
 			INNER JOIN champions ON matches.champion_id = champions.champion_id
 		WHERE match_lane = 'MID'
@@ -213,18 +223,18 @@ DROP PROCEDURE IF EXISTS top_three_adc;
 DELIMITER $$
 CREATE PROCEDURE
 	top_three_adc(
-	IN sum_id VARCHAR(100)
+	IN sum_id BIGINT
 )
 	BEGIN
 		SELECT
 			champions.champion_name,
-			SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists) / SUM(ALL matches.match_deaths) AS kda,
-			SUM(*)                                                                                        AS winrate,
-			-- get sum of games won here / games_played
-			SUM(*)                                                                                        AS games_played,
-			kda * winrate                                                                                 AS performance,
-			STDDEV(kda *
-						 winrate)                                                                               AS standard_deviation
+			(SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths) AS kda,
+			count(matches.match_win)                                                                        AS games_played,
+			count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS winrate,
+			((SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths))/
+            count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS performance,
+            -- STDDEV still needs fixing
+			STDDEV(0)                                                                AS standard_deviation
 		FROM matches
 			INNER JOIN champions ON matches.champion_id = champions.champion_id
 		WHERE match_lane = 'BOTTOM' AND match_role = 'DUO_CARRY'
@@ -241,18 +251,18 @@ DROP PROCEDURE IF EXISTS top_three_sup;
 DELIMITER $$
 CREATE PROCEDURE
 	top_three_sup(
-	IN sum_id VARCHAR(100)
+	IN sum_id BIGINT
 )
 	BEGIN
 		SELECT
 			champions.champion_name,
-			SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists) / SUM(ALL matches.match_deaths) AS kda,
-			SUM(*)                                                                                        AS winrate,
-			-- get sum of games won here / games_played
-			SUM(*)                                                                                        AS games_played,
-			kda * winrate                                                                                 AS performance,
-			STDDEV(kda *
-						 winrate)                                                                               AS standard_deviation
+			(SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths) AS kda,
+			count(matches.match_win)                                                                        AS games_played,
+			count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS winrate,
+			((SUM(ALL matches.match_kills) + SUM(ALL matches.match_assists)) / SUM(ALL matches.match_deaths))/
+            count(CASE WHEN matches.match_win THEN 1 END)/count(matches.match_win)                          AS performance,
+            -- STDDEV still needs fixing
+			STDDEV(0)                                                                AS standard_deviation
 		FROM matches
 			INNER JOIN champions ON matches.champion_id = champions.champion_id
 		WHERE match_lane = 'BOTTOM' AND match_role = 'DUO_SUPPORT'
