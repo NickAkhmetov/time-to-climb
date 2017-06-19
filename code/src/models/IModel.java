@@ -41,6 +41,18 @@ public interface IModel {
     void sendQuery(String query) throws SQLException;
 
     /**
+     * Returns the summoner's ID by running a procedure
+     * @param sumName summoner name that will be entered into the procedure
+     */
+    public long getSummonerID(String sumName);
+
+    /**
+     * Returns the league history of a summoner
+     * @param sumID summoner id that will be entered into the procedure
+     */
+    public ResultSet getLeagues(long sumID);
+
+    /**
      * Returns the top three champions for each role for the user.
      */
     List<List<ChampStat>> getTopThree() throws SQLException;

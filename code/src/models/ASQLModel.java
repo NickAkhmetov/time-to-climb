@@ -52,6 +52,25 @@ public abstract class ASQLModel implements IModel {
     }
 
     @Override
+    public long getSummonerID(String sumName) {
+        String proc = "CALL retrieve_summoner(" + sumName + ")";
+        long sumID;
+        ResultSet summonerInfo = requestData(proc);
+        // Get the summonerID out of this info
+        sumID = 1; //placeholder
+        // Get the SummoenrID out of this info
+        return sumID;
+    }
+
+    @Override
+    public ResultSet getLeagues(long sumID) {
+        String proc = "CALL retrieve_league(" + sumID + ")";
+        ResultSet leagues = requestData(proc);
+        // return something else? List of list of int (season) and list of string (rank)?
+        return leagues;
+    }
+
+    @Override
     public List<List<ChampStat>> getTopThree() throws SQLException {
         // Instantiate the procedure calls for toplane, jungle, midlane, AD carry, and support statistics
         String proc_top = "CALL top_three_top";

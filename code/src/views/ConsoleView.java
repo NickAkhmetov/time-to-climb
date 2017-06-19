@@ -22,3 +22,5 @@ public class ConsoleView extends AView{
 
     }
 }
+
+// NOTE: Change this later

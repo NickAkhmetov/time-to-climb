@@ -19,30 +19,14 @@ public class ConsoleController extends AController {
     private String summonerName;
     private String region;
 
+    /**
+     * Constructs a Console Controller
+     * @param rd A readable source of input
+     * @param ap An output for information to be appended
+     */
     public ConsoleController(Readable rd, Appendable ap) {
         this.rd = rd;
         this.ap = ap;
-    }
-
-    public static void main(String[] args) throws IOException {
-        ConsoleController controller =
-                new ConsoleController(new InputStreamReader(System.in), System.out);
-        controller.model = new MySQLModel();
-
-        try {
-            controller.model.startConnection("root", "root", "localhost", 3306, false);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        controller.enterSummonerName();
-        controller.enterRegion();
-        ConsoleView view = new ConsoleView(controller.model, controller.ap);
-        view.display(controller);
-        //Queries for summoner name based on user inputted summonerName
-        controller.model.requestData("SELECT summoner_name " +
-                "FROM summoners " +
-                "WHERE summoner_name = " + controller.summonerName);
     }
 
     @Override
@@ -71,8 +55,31 @@ public class ConsoleController extends AController {
 
     /**
      * Retrieves the summoner based on input summonerName and region
+     * @param sName Summoner's name
+     * @param reg Summoner's region
      */
-    public void retriveSummoner() {
+    private void retrieveSummoner(String sName, String reg) {
         //Run Query on DataDragon for Summoner information?
+    }
+
+    public static void main(String[] args) throws IOException {
+        ConsoleController controller =
+                new ConsoleController(new InputStreamReader(System.in), System.out);
+        controller.model = new MySQLModel();
+
+        try {
+            controller.model.startConnection("root", "root", "localhost", 3306, false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        controller.enterSummonerName();
+        controller.enterRegion();
+        ConsoleView view = new ConsoleView(controller.model, controller.ap);
+        view.display(controller);
+        //Queries for summoner name based on user inputted summonerName
+        controller.model.requestData("SELECT summoner_name " +
+                "FROM summoners " +
+                "WHERE summoner_name = " + controller.summonerName);
     }
 }
