@@ -1,11 +1,17 @@
-# time-to-climb
-A Java applet for League of Legends data analysis.
+# TimeToClimb
+A multiplatform applet for League of Legends data analysis.
 
 ## Developed by
 * Nikolay Akhmetov
 * Richard Tu
 
-## Inspiration
-Final project for a database design class turned into something a bit more.
+##  WIP. Current Goals
+* Filter out won/lost games to get winrate in SQL
+* Enter actual summoner information/match history into database
+  * Parse Json files into classes, upload those classes's fields into DB
 
-# Heavily WIP.
+## Long term goals
+* Migrate to NoSQL DB scheme.
+  * MySQL -> SQLite -> MongoDB
+* Migrate to Javascript to allow for web applet.
+  * Java -> Angular.js

@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,8 +40,7 @@ public abstract class ASQLModel implements IModel {
             statement.executeQuery(query);
         } catch (java.sql.SQLException e) {
             System.out.println("Unable to reach server.");
-            System.out.println("Retrying...");
-            sendQuery(query);
+            System.exit(1);
         }
     }
 
@@ -58,7 +56,7 @@ public abstract class ASQLModel implements IModel {
         ResultSet summonerInfo = requestData(proc);
         // Get the summonerID out of this info
         sumID = 1; //placeholder
-        // Get the SummoenrID out of this info
+        // Get the SummonerID out of this info
         return sumID;
     }
 
