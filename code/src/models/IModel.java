@@ -56,4 +56,18 @@ public interface IModel {
      * Returns the top three champions for each role for the user.
      */
     List<List<ChampStat>> getTopThree() throws SQLException;
+
+    /**
+     * Gets match info and populates DB with it
+     *
+     * @param sumID Summoner ID to fetch match info for.
+     */
+    void getMatchInfo(int sumID);
+
+    /**
+     * Sets API key
+     *
+     * @param apiKey API key to set the project's API key to
+     */
+    void setApiKey(String apiKey);
 }

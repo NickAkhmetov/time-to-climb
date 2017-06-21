@@ -1,8 +1,11 @@
 package models;
 
 import com.sun.istack.internal.Nullable;
+import jdk.nashorn.internal.parser.JSONParser;
 import utils.ChampStat;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,12 +13,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.*;
+
 /**
  * Abstract class for a SQL-based implementation of the back-end code.
  */
 public abstract class ASQLModel implements IModel {
 
     protected Connection connection;
+    protected String apiKey;
 
     @Override
     @Nullable
@@ -26,8 +32,7 @@ public abstract class ASQLModel implements IModel {
             result = statement.executeQuery(query);
             return result;
         } catch (java.sql.SQLException e) {
-            System.out.println(e);
-            System.out.println("Unable to retrieve results while querying server.");
+            System.out.println("Unable to retrieve results while querying server in requestData(" + query + "). " + e);
         }
         // Won't be reached during proper operation.
         return null;
@@ -39,7 +44,7 @@ public abstract class ASQLModel implements IModel {
             Statement statement = this.connection.createStatement();
             statement.executeQuery(query);
         } catch (java.sql.SQLException e) {
-            System.out.println("Unable to reach server.");
+            System.out.println("Unable to reach server in sendQuery(" + query + "). " + e);
             System.exit(1);
         }
     }
@@ -52,10 +57,16 @@ public abstract class ASQLModel implements IModel {
     @Override
     public long getSummonerID(String sumName) {
         String proc = "CALL retrieve_summoner(" + sumName + ")";
-        long sumID;
+        long sumID = -1;
         ResultSet summonerInfo = requestData(proc);
         // Get the summonerID out of this info
-        sumID = 1; //placeholder
+        try {
+            if (summonerInfo.next()) {
+                sumID = summonerInfo.getLong(1);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving summoner ID in getSummonerID(" + sumName + "). " + e);
+        }
         // Get the SummonerID out of this info
         return sumID;
     }
@@ -63,9 +74,8 @@ public abstract class ASQLModel implements IModel {
     @Override
     public ResultSet getLeagues(long sumID) {
         String proc = "CALL retrieve_league(" + sumID + ")";
-        ResultSet leagues = requestData(proc);
+        return requestData(proc);
         // return something else? List of list of int (season) and list of string (rank)?
-        return leagues;
     }
 
     @Override
@@ -109,5 +119,41 @@ public abstract class ASQLModel implements IModel {
         }
 
         return champs;
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    @Override
+    public void getMatchInfo(int sumID) {
+        String infoRequest = "https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/";
+        String command = "curl --request GET " + infoRequest + sumID + "api_key=" + this.apiKey;
+        JSONObject matchList;
+        JSONArray matches;
+        List<Long> matchIDs = new ArrayList<Long>();
+        Reader reader;
+        try {
+            reader = new InputStreamReader(
+                    Runtime.getRuntime().exec(command).getInputStream());
+            try {
+                matchList = new JSONObject(reader.toString());
+                matches = matchList.getJSONArray("matches");
+                for (int i = 0; i < matches.length(); i++) {
+                    matchIDs.add(matches.getLong(2)); // index 2 in the json array should be the gameIDs
+                }
+                // TODO: Got list of match ID's.
+                // TODO: Time to call for each match, determine which participant is our user, get KDA and win/loss
+                // TODO: then upload to server
+
+            } catch (org.json.JSONException je) { // catch JSON errors
+                System.out.println("JSON exception encountered in getMatchInfo(" + sumID + "). " + je);
+                System.exit(1);
+            }
+        } catch (java.io.IOException e) { // catch inputstream errors
+            System.out.println("Input stream reader runtime exception encountered in getMatchInfo(." + sumID + "). " + e);
+            System.exit(1);
+        }
     }
 }
