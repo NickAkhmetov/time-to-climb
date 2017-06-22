@@ -21,7 +21,8 @@ CREATE TABLE summoners
 	summoner_id    BIGINT		PRIMARY KEY,
 	account_id     BIGINT       NOT NULL,
 	summoner_name  VARCHAR(100) NOT NULL,
-	summoner_level INT          NOT NULL
+	summoner_level INT          NOT NULL,
+    CONSTRAINT U_summoner_name UNIQUE (summoner_name)
 );
 
 DROP TABLE IF EXISTS leagues;
@@ -130,11 +131,15 @@ CREATE TABLE active_summoner
   active        BOOLEAN      NOT NULL,
   CONSTRAINT active_fk_summoner_id
   FOREIGN KEY (summoner_id)
-  REFERENCES summoners (summoner_id),
+  REFERENCES summoners (summoner_id)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE,
 
   CONSTRAINT active_fk_summoner_name
   FOREIGN KEY (summoner_name)
   REFERENCES summoners (summoner_name)
+  ON DELETE CASCADE
+  ON UPDATE CASCADE
 );
 
 INSERT INTO summoners VALUES
@@ -142,8 +147,21 @@ INSERT INTO summoners VALUES
   (234567890, 222222222, "Nick", 30);
 
 INSERT INTO active_summoner VALUES
-  (123456789, "Richard", FALSE),
-  (234567890, "Nick", FALSE);
+  ("Richard", 123456789, FALSE),
+  ("Nick", 234567890, FALSE);
+
+DROP FUNCTION IF EXISTS active;
+DELIMITER $$
+CREATE FUNCTION
+active(
+	sum_id BIGINT
+) RETURNS BOOLEAN
+BEGIN
+ DECLARE flag BOOLEAN;
+ SELECT active INTO flag FROM active_summoner AS a WHERE sum_id = a.summoner_id;
+ RETURN flag;
+END$$
+DELIMITER ;
 
 -- SET ACTIVE SUMMONERS
 DROP TRIGGER IF EXISTS activate_summoner;
@@ -152,7 +170,7 @@ CREATE TRIGGER activate_summoner
 AFTER UPDATE ON active_summoner
 FOR EACH ROW
   BEGIN
-    DELETE * FROM matches;
+    DELETE FROM matches;
     IF
     active(123456789)
     THEN
@@ -162,8 +180,7 @@ FOR EACH ROW
     IF
     active(234567890)
     THEN
-      INSERT INTO matches SELECT *
-                          FROM nick_history;
+      INSERT INTO matches SELECT * FROM nick_history;
     END IF;
   END $$
 DELIMITER ;
@@ -173,7 +190,13 @@ INSERT INTO leagues VALUES
   (3, "Gold 1", 123456789),
   (4, "Platinum 5", 123456789),
   (5, "Gold 1", 123456789),
-  (7, "Gold 4", 123456789);
+  (7, "Gold 4", 123456789),
+  (3, "Silver 1", 234567890),
+  (4, "Gold 1", 234567890),
+  (5, "Platinum 1", 234567890),
+  (6, "Diamond 1", 234567890),
+  (7, "Master", 234567890);
+  
 
 INSERT INTO champions VALUES
   (24, "Jax", "fighter"),
@@ -359,7 +382,7 @@ CREATE PROCEDURE
          ) AS performance_calculation
     GROUP BY champion_name
     ORDER BY performance DESC
-		LIMIT 3;
+	LIMIT 3;
 	END$$
 DELIMITER ;
 
@@ -404,7 +427,7 @@ CREATE PROCEDURE
          ) AS performance_calculation
     GROUP BY champion_name
     ORDER BY performance DESC
-		LIMIT 3;
+	LIMIT 3;
 	END$$
 DELIMITER ;
 
@@ -448,7 +471,7 @@ CREATE PROCEDURE
          ) AS performance_calculation
     GROUP BY champion_name
     ORDER BY performance DESC
-		LIMIT 3;
+	LIMIT 3;
 	END$$
 DELIMITER ;
 
@@ -487,13 +510,13 @@ CREATE PROCEDURE
                       THEN 1 END) / count(matches.match_win)                                            AS winrate
                   FROM matches
                     INNER JOIN champions ON matches.champion_id = champions.champion_id
-                  WHERE match_lane = 'BOT' AND match_role = 'DUO_CARRY' AND matches.summoner_id = sum_id
+                  WHERE match_lane = 'ADC' AND matches.summoner_id = sum_id
                   GROUP BY champion_name
                 ) AS calculations
          ) AS performance_calculation
     GROUP BY champion_name
     ORDER BY performance DESC
-		LIMIT 3;
+	LIMIT 3;
 	END$$
 DELIMITER ;
 
@@ -531,21 +554,27 @@ CREATE PROCEDURE
                       THEN 1 END) / count(matches.match_win)                                            AS winrate
                   FROM matches
                     INNER JOIN champions ON matches.champion_id = champions.champion_id
-                  WHERE match_lane = 'BOT' AND match_role = 'DUO_SUPPORT' AND matches.summoner_id = sum_id
+                  WHERE match_lane = 'SUP' AND matches.summoner_id = sum_id
                   GROUP BY champion_name
                 ) AS calculations
          ) AS performance_calculation
     GROUP BY champion_name
     ORDER BY performance DESC
-		LIMIT 3;
+	LIMIT 3;
 	END$$
 DELIMITER ;
 
 CALL top_three_sup(1);
 
 
+-- DELETE FROM richard_history WHERE richard_history.match_id = 99;
+-- UPDATE active_summoner SET active = TRUE WHERE summoner_name = "Nick";
 -- View Tables --
 SELECT * FROM summoners;
 SELECT * FROM leagues;
 SELECT * FROM matches;
 SELECT * FROM champions;
+SELECT * FROM richard_history;
+SELECT * FROM nick_history;
+SELECT * FROM summoners WHERE summoner_name = 'Nick';
+SELECT * FROM active_summoner;

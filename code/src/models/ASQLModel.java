@@ -20,8 +20,8 @@ import org.json.*;
  */
 public abstract class ASQLModel implements IModel {
 
-    protected Connection connection;
-    protected String apiKey;
+    public Connection connection;
+    public String apiKey;
 
     @Override
     @Nullable
