@@ -150,40 +150,6 @@ INSERT INTO active_summoner VALUES
   ("Richard", 123456789, FALSE),
   ("Nick", 234567890, FALSE);
 
-DROP FUNCTION IF EXISTS active;
-DELIMITER $$
-CREATE FUNCTION
-active(
-	sum_id BIGINT
-) RETURNS BOOLEAN
-BEGIN
- DECLARE flag BOOLEAN;
- SELECT active INTO flag FROM active_summoner AS a WHERE sum_id = a.summoner_id;
- RETURN flag;
-END$$
-DELIMITER ;
-
--- SET ACTIVE SUMMONERS
-DROP TRIGGER IF EXISTS activate_summoner;
-DELIMITER $$
-CREATE TRIGGER activate_summoner
-AFTER UPDATE ON active_summoner
-FOR EACH ROW
-  BEGIN
-    DELETE FROM matches;
-    IF
-    active(123456789)
-    THEN
-      INSERT INTO matches SELECT *
-                          FROM richard_history;
-    END IF;
-    IF
-    active(234567890)
-    THEN
-      INSERT INTO matches SELECT * FROM nick_history;
-    END IF;
-  END $$
-DELIMITER ;
 
 INSERT INTO leagues VALUES
   (2, "Gold 3", 123456789),
@@ -302,6 +268,45 @@ INSERT INTO nick_history VALUES
   (59, 5, "jng", FALSE, 10, 3, 7, 230, 19, 234567890),
   (60, 5, "jng", FALSE, 10, 3, 7, 230, 19, 234567890);
 
+
+-- Function for activate_summoner --
+DROP FUNCTION IF EXISTS active;
+DELIMITER $$
+CREATE FUNCTION
+active(
+	sum_id BIGINT
+) RETURNS BOOLEAN
+BEGIN
+ DECLARE flag BOOLEAN;
+ SELECT active INTO flag FROM active_summoner AS a WHERE sum_id = a.summoner_id;
+ RETURN flag;
+END$$
+DELIMITER ;
+
+
+-- SET ACTIVE SUMMONERS --
+DROP TRIGGER IF EXISTS activate_summoner;
+DELIMITER $$
+CREATE TRIGGER activate_summoner
+AFTER UPDATE ON active_summoner
+FOR EACH ROW
+  BEGIN
+    DELETE FROM matches;
+    IF
+    active(123456789)
+    THEN
+      INSERT INTO matches SELECT *
+                          FROM richard_history;
+    END IF;
+    IF
+    active(234567890)
+    THEN
+      INSERT INTO matches SELECT * FROM nick_history;
+    END IF;
+  END $$
+DELIMITER ;
+
+
 -- Procedures --
 -- retrieve_summoner --
 -- Gets the summoner's information to be used in future queries (level and ids)
@@ -322,8 +327,8 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL retrieve_summoner('Richard');
-CALL retrieve_summoner('Nick');
+-- CALL retrieve_summoner('Richard');
+-- CALL retrieve_summoner('Nick');
 
 -- retrieve_leagues --
 -- Gets the summoner's rank history --
@@ -344,7 +349,9 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL retrieve_leagues(1);
+-- CALL retrieve_leagues(123456789);
+-- CALL retrieve_leagues(234567890);
+
 
 -- top_three_top --
 -- Gets the top 3 champions the summoner played in top lane
@@ -386,8 +393,6 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL top_three_top(1);
-CALL top_three_top(2);
 
 -- top_three_jng --
 -- Gets the top 3 champions the summoner played in the jungle
@@ -431,7 +436,6 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL top_three_jng(1);
 
 -- top_three_mid --
 -- Gets the top 3 champions the summoner played in the mid lane
@@ -475,8 +479,6 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL top_three_mid(1);
-CALL top_three_mid(2);
 
 -- top_three_adc --
 -- Gets the top 3 champions the summoner played in the bottom lane as adc
@@ -520,7 +522,6 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL top_three_adc(1);
 
 -- top_three_sup --
 -- Gets the top 3 champions the summoner played in the bottom lane as support
@@ -564,17 +565,30 @@ CREATE PROCEDURE
 	END$$
 DELIMITER ;
 
-CALL top_three_sup(1);
+-- Analysis Procedures --
+/*
+CALL top_three_top(123456789);
+CALL top_three_top(234567890);
 
+CALL top_three_jng(123456789);
+CALL top_three_jng(234567890);
 
--- DELETE FROM richard_history WHERE richard_history.match_id = 99;
--- UPDATE active_summoner SET active = TRUE WHERE summoner_name = "Nick";
+CALL top_three_mid(123456789);
+CALL top_three_mid(234567890);
+
+CALL top_three_adc(123456789);
+CALL top_three_adc(234567890);
+
+CALL top_three_sup(123456789);
+CALL top_three_sup(234567890);
+*/
 -- View Tables --
+/*
 SELECT * FROM summoners;
 SELECT * FROM leagues;
 SELECT * FROM matches;
 SELECT * FROM champions;
 SELECT * FROM richard_history;
 SELECT * FROM nick_history;
-SELECT * FROM summoners WHERE summoner_name = 'Nick';
 SELECT * FROM active_summoner;
+*/

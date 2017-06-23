@@ -28,7 +28,7 @@ public class ConsoleController extends AController {
      * @param rd A readable source of input
      * @param ap An output for information to be appended
      */
-    public ConsoleController(Readable rd, Appendable ap) {
+    private ConsoleController(Readable rd, Appendable ap) {
         this.rd = rd;
         this.ap = ap;
     }
@@ -57,28 +57,18 @@ public class ConsoleController extends AController {
         region = sc.next();
     }
 
-    /**
-     * Retrieves the summoner based on input summonerName and region
-     *
-     * @param sName Summoner's name
-     * @param reg   Summoner's region
-     */
-    private void retrieveSummoner(String sName, String reg) {
-        //Run Query on DataDragon for Summoner information?
-    }
-
     public static void main(String[] args) throws IOException {
+        // Initialize Controller and start connection
         ConsoleController controller =
                 new ConsoleController(new InputStreamReader(System.in), System.out);
         controller.model = new MySQLModel();
-
         try {
-            controller.model.startConnection("root", "root", "localhost", 3306, false);
+            controller.model.startConnection("root", "563571rT", "localhost", 3306, false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        ResultSet rs = null;
+        // Request first few inputs from user
+        ResultSet rs;
         controller.enterSummonerName();
         controller.enterRegion();
         ConsoleView view = new ConsoleView(controller.model, controller.ap);
@@ -89,8 +79,8 @@ public class ConsoleController extends AController {
                 "WHERE summoner_name = " + "\"" + controller.summonerName + "\"");
 
         //Attempt to print ResultSet of above query
-        ResultSetMetaData rsmd = null;
-        int columnsNumber = 0;
+        ResultSetMetaData rsmd;
+        int columnsNumber;
         try {
             rsmd = rs.getMetaData();
             columnsNumber = rsmd.getColumnCount();
@@ -106,10 +96,9 @@ public class ConsoleController extends AController {
             e.printStackTrace();
         }
 
-
+        //Use summonerName to activate that summoner in the SQL table active_summoner
+        //(Displays all matches for the summoner the user just entered)
         try {
-            //Use summonerName to activate that summoner in the SQL table active_summoner
-            //(Displays all matches for the summoner the user just entered)
             String query = "UPDATE active_summoner SET active = TRUE WHERE summoner_name = ?";
             PreparedStatement preparedStatement = controller.model.connection.prepareStatement(query);
             preparedStatement.setString(1, controller.summonerName);
@@ -131,11 +120,13 @@ public class ConsoleController extends AController {
             e.printStackTrace();
         }
 
+        // While loop for Entering Commands - set flag to false when EXIT is run
         boolean flag = true;
-        while (flag == true) {
+        while (flag) {
             Scanner sc = new Scanner(controller.rd);
             System.out.println("Enter a Command (CREATE/READ/UPDATE/DELETE/EXIT)");
             String command = sc.next();
+            // CREATE Command (Summoner/Match)
             if (command.equals("CREATE") || command.equals("create")) {
                 System.out.println("What do you want to create? (summoner/match)");
                 String create = sc.next();
@@ -176,6 +167,8 @@ public class ConsoleController extends AController {
                         bwin = true;
                     } else if (win.equals("FALSE") || win.equals("false")) {
                         bwin = false;
+                    } else {
+                        System.out.println("Invalid input for win");
                     }
                     System.out.println("Insert kills");
                     String kills = sc.next();
@@ -215,7 +208,10 @@ public class ConsoleController extends AController {
                 } else {
                     System.out.println("Invalid Input");
                 }
-            } else if (command.equals("READ") || command.equals("read")) {
+
+            }
+            // READ command (summoners/matches/champions/leagues/active_summoners/richard_history/nick_history)
+            else if (command.equals("READ") || command.equals("read")) {
                 System.out.println("Which table? (summoners/leagues/champions/matches/nick_history/richard_history/active_summoner)");
                 String table = sc.next();
                 try {
@@ -234,28 +230,24 @@ public class ConsoleController extends AController {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-            } else if (command.equals("UPDATE") || command.equals("update")) {
+            }
+            //UPDATE command (summoner/match/active_summoners [true/false])
+            else if (command.equals("UPDATE") || command.equals("update")) {
                 System.out.println("Enter summoner to update activity (Richard/Nick) or enter a table to update (summoners/matches)");
                 String input = sc.next();
                 if(input.equals("Richard") || input.equals("richard") || input.equals("Nick") || input.equals("nick")) {
                     System.out.println("Enter activity (true/false)");
-                    String b = sc.next();
-                    Boolean activity;
-                    if (b.equals("true")) {
-                        activity = true;
-                    } else {
-                        activity = false;
-                    }
+                    String activity = sc.next();
                     try {
                         String query = "UPDATE active_summoner SET active = ? WHERE summoner_name = ?";
                         PreparedStatement preparedStatement = controller.model.connection.prepareStatement(query);
-                        preparedStatement.setBoolean(1, activity);
+                        preparedStatement.setBoolean(1, Boolean.parseBoolean(activity));
                         preparedStatement.setString(2, input);
                         preparedStatement.executeUpdate();
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("Summoner " + input + "'s activity updated to be " + b);
+                    System.out.println("Summoner " + input + "'s activity updated to be " + activity);
                 } else if (input.equals("summoners")) {
                     System.out.println("Which summoner do you want to update? (SummonerID)");
                     String sumID = sc.next();
@@ -280,7 +272,7 @@ public class ConsoleController extends AController {
                 } else if (input.equals("matches")) {
                     System.out.println("Which match do you want to update? (MatchID)");
                     String matchID = sc.next();
-                    System.out.println("Which field do you want to update? (match_season/match_lane/match_win/match_kills/match_deaths/match_assists/match_cs");
+                    System.out.println("Which field do you want to update? (match_season/match_lane/match_win/match_kills/match_deaths/match_assists/match_cs)");
                     String field = sc.next();
                     System.out.println("What do you want to set " + field + " to?");
                     String update = sc.next();
@@ -303,7 +295,9 @@ public class ConsoleController extends AController {
                 } else {
                     System.out.println("Invalid Input");
                 }
-            } else if (command.equals("DELETE") || command.equals("delete")) {
+            }
+            //DELETE command (summoner/match)
+            else if (command.equals("DELETE") || command.equals("delete")) {
                 System.out.println("What do you want to delete? (summoner/match)");
                 String delete = sc.next();
                 if (delete.equals("summoner")) {
@@ -342,7 +336,9 @@ public class ConsoleController extends AController {
                     System.out.println("Invalid Input");
                 }
 
-            } else if (command.equals("EXIT") || command.equals("exit")) {
+            }
+            //EXIT command
+            else if (command.equals("EXIT") || command.equals("exit")) {
                 try {
                     controller.model.connection.close();
                 } catch (SQLException e) {
