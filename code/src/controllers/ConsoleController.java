@@ -124,7 +124,7 @@ public class ConsoleController extends AController {
         boolean flag = true;
         while (flag) {
             Scanner sc = new Scanner(controller.rd);
-            System.out.println("Enter a Command (CREATE/READ/UPDATE/DELETE/EXIT)");
+            System.out.println("Enter a Command (CREATE/READ/UPDATE/DELETE/PROCEDURES/EXIT)");
             String command = sc.next();
             // CREATE Command (Summoner/Match)
             if (command.equals("CREATE") || command.equals("create")) {
@@ -336,6 +336,58 @@ public class ConsoleController extends AController {
                     System.out.println("Invalid Input");
                 }
 
+            }
+            // PROCEDURES command
+            else if (command.equals("PROCEDURES") || command.equals("procedures")){
+                System.out.println("Which procedure do you want to run? (retrieve_summoner/retrieve_leagues/top_three_top/top_three_jng/top_three_mid/top_three_adc/top_three_sup)");
+                String procedure = sc.next();
+                if (procedure.equals("retrieve_summoner")) {
+                    System.out.println("Enter Summoner Name");
+                    String sumName = sc.next();
+                    try {
+                        String query = "CALL " + procedure + "(?)";
+                        PreparedStatement preparedStatement = controller.model.connection.prepareStatement(query);
+                        preparedStatement.setString(1, sumName);
+                        rs = preparedStatement.executeQuery();
+                        System.out.println("Procedure " + procedure + " produces result:");
+                        rsmd = rs.getMetaData();
+                        columnsNumber = rsmd.getColumnCount();
+                        while (rs.next()) {
+                            for (int i = 1; i <= columnsNumber; i++) {
+                                if (i > 1) System.out.print(",  ");
+                                String columnValue = rs.getString(i);
+                                System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                            }
+                            System.out.println("");
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                } else if (procedure.equals("retrieve_leagues") || procedure.equals("top_three_top") ||
+                        procedure.equals("top_three_jng") || procedure.equals("top_three_mid") ||
+                        procedure.equals("top_three_adc") || procedure.equals("top_three_sup")) {
+                    System.out.println("Enter Summoner ID");
+                    String sumID = sc.next();
+                    try {
+                        String query = "CALL " + procedure + "(?)";
+                        PreparedStatement preparedStatement = controller.model.connection.prepareStatement(query);
+                        preparedStatement.setInt(1, Integer.parseInt(sumID));
+                        rs = preparedStatement.executeQuery();
+                        System.out.println("Procedure " + procedure + " produces result:");
+                        rsmd = rs.getMetaData();
+                        columnsNumber = rsmd.getColumnCount();
+                        while (rs.next()) {
+                            for (int i = 1; i <= columnsNumber; i++) {
+                                if (i > 1) System.out.print(",  ");
+                                String columnValue = rs.getString(i);
+                                System.out.print(columnValue + " " + rsmd.getColumnName(i));
+                            }
+                            System.out.println("");
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             //EXIT command
             else if (command.equals("EXIT") || command.equals("exit")) {

@@ -344,8 +344,8 @@ CREATE PROCEDURE
 			league_season,
 			league_rank
 		FROM summoners s, leagues l
-		WHERE s.summoner_id = sum_id
-		ORDER BY summoner_name;
+		WHERE l.summoner_id = sum_id AND l.summoner_id = s.summoner_id
+		ORDER BY league_season;
 	END$$
 DELIMITER ;
 
